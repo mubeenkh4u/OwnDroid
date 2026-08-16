@@ -1,0 +1,42 @@
+name: Patched OwnDroid APK
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'app/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'gradle/**'
+      - 'gradlew'
+      - '.github/workflows/patched-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+      - name: Collect APK
+        run: |
+          mkdir -p artifact
+          find app/build/outputs/apk -type f -name '*.apk' -exec cp {} artifact/OwnDroid-KSP-patched.apk \;
+          test -s artifact/OwnDroid-KSP-patched.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OwnDroid-KSP-patched
+          path: artifact/OwnDroid-KSP-patched.apk
+          if-no-files-found: error
