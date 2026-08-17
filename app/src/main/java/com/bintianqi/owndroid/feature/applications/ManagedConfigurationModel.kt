@@ -1,15 +1,22 @@
 package com.bintianqi.owndroid.feature.applications
 
 sealed class AppRestriction(
-    open val key: String, open val title: String?, open val description: String?
+    open val key: String,
+    open val title: String?,
+    open val description: String?,
+    open val path: List<String>,
+    open val hidden: Boolean
 ) {
     abstract fun isNull(): Boolean
+
     data class IntItem(
         override val key: String,
         override val title: String?,
         override val description: String?,
         var value: Int?,
-    ) : AppRestriction(key, title, description) {
+        override val path: List<String> = emptyList(),
+        override val hidden: Boolean = false,
+    ) : AppRestriction(key, title, description, path, hidden) {
         override fun isNull(): Boolean = value == null
     }
 
@@ -17,8 +24,10 @@ sealed class AppRestriction(
         override val key: String,
         override val title: String?,
         override val description: String?,
-        var value: String?
-    ) : AppRestriction(key, title, description) {
+        var value: String?,
+        override val path: List<String> = emptyList(),
+        override val hidden: Boolean = false
+    ) : AppRestriction(key, title, description, path, hidden) {
         override fun isNull(): Boolean = value == null
     }
 
@@ -26,8 +35,10 @@ sealed class AppRestriction(
         override val key: String,
         override val title: String?,
         override val description: String?,
-        var value: Boolean?
-    ) : AppRestriction(key, title, description) {
+        var value: Boolean?,
+        override val path: List<String> = emptyList(),
+        override val hidden: Boolean = false
+    ) : AppRestriction(key, title, description, path, hidden) {
         override fun isNull(): Boolean = value == null
     }
 
@@ -37,8 +48,10 @@ sealed class AppRestriction(
         override val description: String?,
         val entries: Array<String>,
         val entryValues: Array<String>,
-        var value: String?
-    ) : AppRestriction(key, title, description) {
+        var value: String?,
+        override val path: List<String> = emptyList(),
+        override val hidden: Boolean = false
+    ) : AppRestriction(key, title, description, path, hidden) {
         override fun isNull(): Boolean = value == null
     }
 
@@ -48,8 +61,10 @@ sealed class AppRestriction(
         override val description: String?,
         val entries: Array<String>,
         val entryValues: Array<String>,
-        var value: Array<String>?
-    ) : AppRestriction(key, title, description) {
+        var value: Array<String>?,
+        override val path: List<String> = emptyList(),
+        override val hidden: Boolean = false
+    ) : AppRestriction(key, title, description, path, hidden) {
         override fun isNull(): Boolean = value == null
     }
 }
