@@ -68,15 +68,6 @@ class ManagedConfigurationViewModel(
             }
         }
 
-        /*
-         * Bundle arrays cannot be represented by OwnDroid's single-value editor.
-         * The old KSP patch flattened them as ordinary Bundle paths. That produced
-         * Bundle values where OEMConfig expects Parcelable[]/Bundle[], causing KSP's
-         * "android.os.Bundle cannot be cast to android.os.Parcelable[]" failure.
-         *
-         * Do not expose bundle-array children until the UI has a real add/remove
-         * array editor. More importantly, never serialize them as ordinary Bundles.
-         */
         if (e.type == RestrictionEntry.TYPE_BUNDLE_ARRAY) {
             return emptyList()
         }
@@ -140,14 +131,6 @@ class ManagedConfigurationViewModel(
         return listOf(r)
     }
 
-    /**
-     * Build a managed-configuration Bundle from editable leaf restrictions.
-     *
-     * A path is created only after a leaf actually has a value. This is important
-     * for OEMConfig: creating every schema path as an empty Bundle makes KSP try to
-     * parse inactive policy sections and their mandatory control fields. It also
-     * used to turn bundle-array schema nodes into ordinary Bundles.
-     */
     private fun transformAppRestriction(list: List<AppRestriction>): Bundle {
         val root = Bundle()
 
@@ -179,19 +162,9 @@ class ManagedConfigurationViewModel(
         return root
     }
 
-    /**
-     * KSP publishes both Device Owner (doPolicies) and Profile Owner (poPolicies)
-     * policy trees in the same OEMConfig schema. On a fully-managed Device Owner
-     * device, sending a partially populated poPolicies tree makes KSP reject the
-     * entire profile because poPoliciesIsControlled is mandatory.
-     *
-     * OwnDroid is the Device Owner in this mode, so discard Profile Owner policy
-     * data and ensure the mandatory DO/application-management control switches are
-     * present whenever their corresponding bundles are being sent.
-     */
     private fun normalizeKnoxServicePlugin(root: Bundle) {
         if (packageName != KNOX_SERVICE_PLUGIN_PACKAGE) return
-        if (!dpm.isDeviceOwnerApp(application.packageName)) return
+        if (!ph.myDpm.isDeviceOwnerApp(application.packageName)) return
 
         root.remove("poPolicies")
 
