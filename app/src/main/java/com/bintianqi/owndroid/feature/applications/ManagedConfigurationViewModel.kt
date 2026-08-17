@@ -74,8 +74,6 @@ class ManagedConfigurationViewModel(
             }
         }
 
-        // Bundle arrays require an array editor to expose individual rows safely.
-        // They are still preserved/serialized by buildFullConfiguration().
         if (e.type == RestrictionEntry.TYPE_BUNDLE_ARRAY) return emptyList()
 
         val hidden = e.type == RestrictionEntry.TYPE_NULL
@@ -137,16 +135,8 @@ class ManagedConfigurationViewModel(
         return listOf(r)
     }
 
-    /**
-     * Reconstruct the complete managed-configuration tree from the application's
-     * RestrictionEntry schema, overlaying the administrator's edited leaf values.
-     *
-     * Samsung KSP requires UEMs to send the complete OEMConfig schema, including
-     * unmodified/default and hidden values. TYPE_BUNDLE is emitted as Bundle and
-     * TYPE_BUNDLE_ARRAY as Parcelable[] (preserving any existing array values).
-     */
     private fun buildFullConfiguration(
-        schema: List<RestrictionEntry>,
+        schema: Iterable<RestrictionEntry>,
         edited: List<AppRestriction>,
         existing: Bundle?,
         path: List<String>
@@ -159,7 +149,10 @@ class ManagedConfigurationViewModel(
                     out.putBundle(
                         entry.key,
                         buildFullConfiguration(
-                            entry.restrictions.orEmpty(), edited, oldChild, path + entry.key
+                            entry.restrictions.orEmpty().asIterable(),
+                            edited,
+                            oldChild,
+                            path + entry.key
                         )
                     )
                 }
